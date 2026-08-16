@@ -16,13 +16,13 @@ public class TileManager {
 
     GamePanel gamePanel;
     public Tile[] tile;
-    public int mapTileNum[][];
+    public int mapTileType[][];
 
     public TileManager(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
 
         tile = new Tile[10];
-        mapTileNum = new int[GameSettings.MAX_WORLD_COL][GameSettings.MAX_WORLD_ROW];
+        mapTileType = new int[GameSettings.MAX_WORLD_COL][GameSettings.MAX_WORLD_ROW];
 
         registerTile();
         loadMap("/map/map02.txt");
@@ -54,7 +54,7 @@ public class TileManager {
 
                     int num = Integer.parseInt(number[col]);
 
-                    mapTileNum[col][row] = num;
+                    mapTileType[col][row] = num;
                     col ++;
                 }
                 if (col == GameSettings.MAX_WORLD_COL) {
@@ -102,7 +102,7 @@ public class TileManager {
 
         while(world_col < GameSettings.MAX_WORLD_COL && world_row < GameSettings.MAX_WORLD_ROW) {
 
-            int tileNum = mapTileNum[world_col][world_row];
+            int tileNum = mapTileType[world_col][world_row];
 
             int world_X = world_col * GameSettings.TILE_SIZE;
             int world_Y = world_row * GameSettings.TILE_SIZE;

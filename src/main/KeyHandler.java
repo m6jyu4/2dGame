@@ -9,6 +9,7 @@ public class KeyHandler implements KeyListener {
     public boolean downPressed;
     public boolean leftPressed;
     public boolean rightPressed;
+    public boolean runPressed;
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {}
@@ -21,6 +22,7 @@ public class KeyHandler implements KeyListener {
             case KeyEvent.VK_A -> leftPressed = true;
             case KeyEvent.VK_S -> downPressed = true;
             case KeyEvent.VK_E -> rightPressed = true;
+            case KeyEvent.VK_SHIFT -> runPressed = true;
         }
     }
 
@@ -32,6 +34,7 @@ public class KeyHandler implements KeyListener {
             case KeyEvent.VK_A -> leftPressed = false;
             case KeyEvent.VK_S -> downPressed = false;
             case KeyEvent.VK_E -> rightPressed = false;
+            case KeyEvent.VK_SHIFT -> runPressed = false;
         }
     }
 }

@@ -1,12 +1,12 @@
 package main;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
         GamePanel gamePanel = new GamePanel();
         createWindow(new JFrame(), gamePanel);
+        gamePanel.initialiseGame();
         gamePanel.startGame();
     }
 

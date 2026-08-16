@@ -63,7 +63,6 @@ public class Player extends Entity{
             image = ImageIO.read(getClass().getResourceAsStream("/player/" + imageName + ".png"));
             image = util.scaleImage(image, GameSettings.TILE_SIZE, GameSettings.TILE_SIZE);
         } catch (IOException e) {
-            System.err.println("Error loading image: " + imageName);
             e.printStackTrace();
         }
         return image;
@@ -71,7 +70,7 @@ public class Player extends Entity{
 
     private BufferedImage selectTexture() {
 
-        setDirection();
+        setSpriteDirection();
         setSpriteCounter();
 
         if (keyHandler.upPressed)   return (spriteNum == 1) ? up1 : up2;
@@ -96,7 +95,7 @@ public class Player extends Entity{
         }
     }
 
-    private void setDirection() {
+    private void setSpriteDirection() {
         if (keyHandler.upPressed) {
             direction = Direction.UP;
         }
@@ -111,9 +110,16 @@ public class Player extends Entity{
         }
     }
 
-    private void movePlayer() {
+    private void handlePlayerMovement() {
+
         float moveX = 0;
         float moveY = 0;
+
+        speed = 4;
+
+        collisionUp = collisionDown = collisionLeft = collisionRight = false;
+
+        if (keyHandler.runPressed) speed = 5;
 
         if (keyHandler.upPressed) moveY -= 1;
         if (keyHandler.downPressed) moveY += 1;
@@ -126,29 +132,25 @@ public class Player extends Entity{
         moveX = moveX * speed / length;
         moveY = moveY * speed / length;
 
-        collisionUp = collisionDown = collisionLeft = collisionRight = false;
-        gamePanel.collisionChecker.checkTile(this, 0, moveY);
-        if (!collisionUp && !collisionDown) {
-            world_Y += moveY;
-        }
+        gamePanel.collisionChecker.checkCollision(this, 0, moveY);
+        if (!collisionUp && !collisionDown) world_Y += moveY;
 
-        gamePanel.collisionChecker.checkTile(this, moveX, 0);
-        if (!collisionLeft && !collisionRight) {
-            world_X += moveX;
-        }
+        gamePanel.collisionChecker.checkCollision(this, moveX, 0);
+        if (!collisionLeft && !collisionRight) world_X += moveX;
 
     }
 
     public void update() {
-        movePlayer();
+        handlePlayerMovement();
     }
 
     public void draw(Graphics2D g2) {
-        g2.drawImage(selectTexture(), (int) screen_X, (int) screen_Y, GameSettings.TILE_SIZE, GameSettings.TILE_SIZE, null);
-//        g2.setColor(Color.RED);
-//        int aabbScreenX = screen_X + AABB.x;
-//        int aabbScreenY = screen_Y + AABB.y;
-//
-//        g2.drawRect(aabbScreenX, aabbScreenY, AABB.width, AABB.height);
+        g2.drawImage(selectTexture(), screen_X, screen_Y, GameSettings.TILE_SIZE, GameSettings.TILE_SIZE, null);
+
+        g2.setColor(Color.RED);
+        int aabbScreenX = screen_X + AABB.x;
+        int aabbScreenY = screen_Y + AABB.y;
+        g2.drawRect(aabbScreenX, aabbScreenY, AABB.width, AABB.height);
+
     }
 }
