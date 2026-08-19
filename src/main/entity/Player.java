@@ -12,6 +12,10 @@ public class Player extends Entity{
     GamePanel gamePanel;
     KeyHandler keyHandler;
 
+    public int ownedKey = 0;
+
+    private static final float DIAGONAL_MULTIPLIER = 0.70710678f;
+
     public final int screen_X, screen_Y;
 
     public Player(GamePanel gamePanel, KeyHandler keyHandler) {
@@ -131,30 +135,59 @@ public class Player extends Entity{
         if (moveX == 0 && moveY == 0) return;
 
 
-        gamePanel.collisionChecker.checkCollision(this, 0, moveY * speed);
+        gamePanel.collisionChecker.checkTileCollision(this, 0, moveY * speed);
+        int objectIndexX = gamePanel.collisionChecker.checkObjectCollision(this, moveX * speed, 0);
         if(collisionUp || collisionDown) moveY = 0;
 
-        gamePanel.collisionChecker.checkCollision(this, moveX * speed, 0);
+        gamePanel.collisionChecker.checkTileCollision(this, moveX * speed, 0);
+        int objectIndexY = gamePanel.collisionChecker.checkObjectCollision(this, 0, moveY * speed);
         if(collisionLeft || collisionRight) moveX = 0;
 
-
-        int objectIndex = gamePanel.collisionChecker.checkObject(this, true);
-
+        int objectIndex = -1;
+        if (objectIndexX != objectIndex) objectIndex = objectIndexX;
+        if (objectIndexY != objectIndex) objectIndex = objectIndexY;
+        pickUpObject(objectIndex);
 
 
         float tempX = moveX * speed;
         float tempY = moveY * speed;
 
         if (moveX != 0 && moveY != 0) {
-            float length = (float) Math.sqrt(moveX * moveX + moveY * moveY);
-            tempX = moveX * speed / length;
-            tempY = moveY * speed / length;
+            tempX = moveX * speed * DIAGONAL_MULTIPLIER;
+            tempY = moveY * speed * DIAGONAL_MULTIPLIER;
         }
         if (!collisionUp && !collisionDown) world_Y += tempY;
 
         if (!collisionLeft && !collisionRight) world_X += tempX;
 
     }
+
+    private void pickUpObject(int i) {
+        if(i == -1) return;
+        if(gamePanel.object[i] == null) {
+            System.out.println("Warning: Interacted with a null object at index " + i + " !");
+            return;
+        }
+        String objectName = gamePanel.object[i].name;
+        if (objectName == null) {
+            System.out.println("Warning: Interacted with an object at index " + i + " that has no name assigned!");
+            return;
+        }
+        switch(objectName) {
+            case "Key":
+                ownedKey++;
+                gamePanel.object[i] = null;
+                System.out.println("Key: " + ownedKey);
+                break;
+            case "Door":
+                if(ownedKey > 0){
+                    gamePanel.object[i] = null;
+                    ownedKey--;
+                }
+                System.out.println("Key: " + ownedKey);
+                break;
+        }
+    };
 
     public void update() {
         handlePlayerMovement();
@@ -167,6 +200,5 @@ public class Player extends Entity{
         int aabbScreenX = screen_X + AABB.x;
         int aabbScreenY = screen_Y + AABB.y;
         g2.drawRect(aabbScreenX, aabbScreenY, AABB.width, AABB.height);
-
     }
 }

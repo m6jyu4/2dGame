@@ -17,6 +17,8 @@ public class Object_Chest extends GameObject {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        name = "Chest";
     }
 
 }

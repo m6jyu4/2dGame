@@ -17,6 +17,8 @@ public class Object_Boots extends GameObject {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        name = "Boots";
     }
 
 }

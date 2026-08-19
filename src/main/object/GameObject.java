@@ -10,9 +10,9 @@ public class GameObject {
 
     public BufferedImage image;
     public String name;
-    public boolean collision = true;
     public int worldX, worldY;
-    public Rectangle AABB = new Rectangle(0,0,48,48);
+    public boolean collision = false;
+    public Rectangle AABB = new Rectangle(0,0,16 * GameSettings.TEXTURE_SCALE,16 * GameSettings.TEXTURE_SCALE);
     public int AABB_X = 0;
     public int AABB_Y = 0;
 
@@ -26,7 +26,19 @@ public class GameObject {
                 worldY + GameSettings.TILE_SIZE > gamePanel.player.world_Y - gamePanel.player.screen_Y &&
                 worldY - GameSettings.TILE_SIZE < gamePanel.player.world_Y + gamePanel.player.screen_Y){
             g2.drawImage(image, screen_X, screen_Y, null);
+
         }
+
+        for (int i = 0; i < gamePanel.object.length; i++) {
+            if(gamePanel.object[i] == null) continue;
+            int aabbScreenX = screen_X + AABB.x;
+          int aabbScreenY = screen_Y + AABB.y;
+
+            g2.setColor(Color.red);
+            g2.drawRect(aabbScreenX, aabbScreenY, gamePanel.object[i].AABB.width, gamePanel.object[i].AABB.height);
+
+        }
+
 
     }
 }

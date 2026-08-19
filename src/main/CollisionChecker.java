@@ -20,24 +20,24 @@ public class CollisionChecker {
         this.gamePanel = gamePanel;
     }
 
-    public void checkCollision(Entity entity, float moveX, float moveY) {
+    public void checkTileCollision(Entity entity, float moveX, float moveY) {
 
         calculateEntityBound(entity);
 
         if (moveY != 0) { // MOVEMENT ALONG AXIS: Y ( UP / DOWN )
             if (moveY < 0) {
-                checkUpTileCollision(entity, moveY);
+                setUpCollision(entity, moveY);
             }
             if (moveY > 0) {
-                checkDownTileCollision(entity, moveY);
+                setDownCollision(entity, moveY);
             }
         }
         if (moveX != 0) { // MOVEMENT ALONG AXIS: X ( LEFT / RIGHT )
             if (moveX < 0) {
-                checkLeftTileCollision(entity, moveX);
+                setLeftCollision(entity, moveX);
             }
             if (moveX > 0) {
-                checkRightTileCollision(entity, moveX);
+                setRightCollision(entity, moveX);
             }
         }
     }
@@ -54,104 +54,85 @@ public class CollisionChecker {
         entityBottomTile = (int) entityBottom / GameSettings.TILE_SIZE;
     }
 
-    private void checkUpTileCollision(Entity entity, float move) {
+    private void setUpCollision(Entity entity, float move) {
         int tileMovingInto = (int) (entityTop + move) / GameSettings.TILE_SIZE;
-        entity.collisionUp = setCollisionTileY(tileMovingInto);
+        entity.collisionUp = isCollidingWithTileY(tileMovingInto);
     }
 
-    private void checkDownTileCollision(Entity entity, float move) {
+    private void setDownCollision(Entity entity, float move) {
         int tileMovingInto = (int) (entityBottom + move) / GameSettings.TILE_SIZE;
-        entity.collisionDown = setCollisionTileY(tileMovingInto);
+        entity.collisionDown = isCollidingWithTileY(tileMovingInto);
     }
 
-    private void checkLeftTileCollision(Entity entity, float move) {
+    private void setLeftCollision(Entity entity, float move) {
         int tileMovingInto = (int) (entityLeft + move) / GameSettings.TILE_SIZE;
-        entity.collisionLeft = setCollisionTileX(tileMovingInto);
+        entity.collisionLeft = isCollidingWithTileX(tileMovingInto);
     }
 
-    private void checkRightTileCollision(Entity entity, float move) {
+    private void setRightCollision(Entity entity, float move) {
         int tileMovingInto = (int) (entityRight + move) / GameSettings.TILE_SIZE;
-        entity.collisionRight = setCollisionTileX(tileMovingInto);
+        entity.collisionRight = isCollidingWithTileX(tileMovingInto);
     }
 
-    private boolean setCollisionTileX(int tile) {
+    private boolean isCollidingWithTileX(int tile) {
         int TopTileType    = gamePanel.tileManager.mapTileType[tile][entityTopTile];
         int BottomTileType = gamePanel.tileManager.mapTileType[tile][entityBottomTile];
         return (gamePanel.tileManager.tile[TopTileType].collision || gamePanel.tileManager.tile[BottomTileType].collision);
     }
 
-    private boolean setCollisionTileY(int tile) {
+    private boolean isCollidingWithTileY(int tile) {
         int LeftTileType  = gamePanel.tileManager.mapTileType[entityLeftTile][tile];
         int RightTileType = gamePanel.tileManager.mapTileType[entityRightTile][tile];
         return (gamePanel.tileManager.tile[LeftTileType].collision || gamePanel.tileManager.tile[RightTileType].collision);
     }
 
-    public int checkObject(Entity entity, boolean player) {
-        int index = 999;
+    public int checkObjectCollision(Entity entity, float moveX, float moveY) {
+        float newX = entity.world_X + entity.AABB.x + moveX;
+        float newY = entity.world_Y + entity.AABB.y + moveY;
+
+        float activationRangeSq = 16384f; // (16 * GameSettings.TEXTURE_SCALE) SQUARED
 
         for (int i = 0; i < gamePanel.object.length; i++) {
-            if(gamePanel.object[i] != null) {
-                entity.AABB.x = (int) (entity.world_X + entity.AABB.x);
-                entity.AABB.y = (int) (entity.world_Y + entity.AABB.y);
+            if (gamePanel.object[i] == null) continue;
 
-                gamePanel.object[i].AABB.x = gamePanel.object[i].worldX + gamePanel.object[i].AABB.x;
-                gamePanel.object[i].AABB.y = gamePanel.object[i].worldY + gamePanel.object[i].AABB.y;
+            float dx = gamePanel.object[i].worldX - entity.world_X;
+            float dy = gamePanel.object[i].worldY - entity.world_Y;
+            float distanceSq = (dx * dx) + (dy * dy);
 
-                switch (entity.direction) {
-                    case UP:
-                        entity.AABB.y -= entity.speed;
-                        if(entity.AABB.intersects(gamePanel.object[i].AABB)){
-                            if(gamePanel.object[i].collision){
-                                entity.collisionUp = true;
-                            }
-                            if(player) {
-                                index = i;
-                            }
-                        }
-                        break;
-                    case DOWN:
-                        entity.AABB.y += entity.speed;
-                        if(entity.AABB.intersects(gamePanel.object[i].AABB)){
-                            if(gamePanel.object[i].collision){
-                                entity.collisionDown = true;
-                            }
-                            if(player) {
-                                index = i;
-                            }
-                        }
-                        break;
-                    case LEFT:
-                        entity.AABB.x -= entity.speed;
-                        if(entity.AABB.intersects(gamePanel.object[i].AABB)){
-                            if(gamePanel.object[i].collision){
-                                entity.collisionLeft = true;
-                            }
-                            if(player) {
-                                index = i;
-                            }
-                        }
-                        break;
-                    case RIGHT:
-                        entity.AABB.x += entity.speed;
-                        if(entity.AABB.intersects(gamePanel.object[i].AABB)){
-                            if(gamePanel.object[i].collision){
-                                entity.collisionRight = true;
-                            }
-                            if(player) {
-                                index = i;
-                            }
-                        }
-                        break;
+            if (distanceSq > activationRangeSq) continue;
+
+            float objLeft   = gamePanel.object[i].worldX + gamePanel.object[i].AABB.x;
+            float objRight  = objLeft + gamePanel.object[i].AABB.width;
+            float objTop    = gamePanel.object[i].worldY + gamePanel.object[i].AABB.y;
+            float objBottom = objTop + gamePanel.object[i].AABB.height;
+
+            boolean moveIntoObjectX = newX < objRight && newX + entity.AABB.width > objLeft && newY < objBottom && newY + entity.AABB.height > objTop;
+            boolean moveIntoObjectY = newX < objRight && newX + entity.AABB.width > objLeft && newY < objBottom && newY + entity.AABB.height > objTop;
+
+            if (moveIntoObjectY && moveY != 0) { // MOVEMENT ALONG AXIS: Y ( UP / DOWN )
+                if (moveY < 0) {
+                    entity.collisionUp    = gamePanel.object[i].collision;
+                    System.out.println("UP");
                 }
-                entity.AABB.x = entity.AABB_X;
-                entity.AABB.y = entity.AABB_Y;
-                gamePanel.object[i].AABB.x = gamePanel.object[i].AABB_X;
-                gamePanel.object[i].AABB.y = gamePanel.object[i].AABB_Y;
+                if (moveY > 0) {
+                    entity.collisionDown  = gamePanel.object[i].collision;
+                    System.out.println("DOWN");
+                }
+                return i;
             }
-
+            if (moveIntoObjectX && moveX != 0) { // MOVEMENT ALONG AXIS: X ( LEFT / RIGHT )
+                if (moveX < 0) {
+                    entity.collisionLeft  = gamePanel.object[i].collision;
+                    System.out.println("LEFT");
+                }
+                if (moveX > 0) {
+                    entity.collisionRight = gamePanel.object[i].collision;
+                    System.out.println("RIGHT");
+                }
+                return i;
+            }
         }
-
-        return index;
+        return -1;
     }
 
 }

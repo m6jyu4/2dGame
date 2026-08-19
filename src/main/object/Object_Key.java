@@ -18,6 +18,8 @@ public class Object_Key extends GameObject {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        name = "Key";
     }
 
 }

@@ -18,7 +18,9 @@ public class Object_Door extends GameObject {
             e.printStackTrace();
         }
 
+        name = "Door";
         collision = true;
+
     }
 
 }
