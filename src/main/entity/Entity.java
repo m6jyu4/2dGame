@@ -16,6 +16,8 @@ public class Entity {
     public int spriteNum = 1;
 
     public Rectangle AABB;
+    public int AABB_X;
+    public int AABB_Y;
 
     public boolean collisionUp;
     public boolean collisionDown;

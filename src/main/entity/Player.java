@@ -22,6 +22,9 @@ public class Player extends Entity{
         screen_Y = GameSettings.SCREEN_HEIGHT / 2 - GameSettings.TILE_SIZE / 2;
 
         AABB = new Rectangle(8 * 2, 16 * 2, 32, 32);
+        AABB_X = AABB.x;
+        AABB_Y = AABB.y;
+
 
         setDefaultValue();
         registerPlayerTexture();
@@ -115,10 +118,9 @@ public class Player extends Entity{
         float moveX = 0;
         float moveY = 0;
 
-        speed = 4;
-
         collisionUp = collisionDown = collisionLeft = collisionRight = false;
 
+        speed = 4;
         if (keyHandler.runPressed) speed = 5;
 
         if (keyHandler.upPressed) moveY -= 1;
@@ -128,15 +130,29 @@ public class Player extends Entity{
 
         if (moveX == 0 && moveY == 0) return;
 
-        float length = (float) Math.sqrt(moveX * moveX + moveY * moveY);
-        moveX = moveX * speed / length;
-        moveY = moveY * speed / length;
 
-        gamePanel.collisionChecker.checkCollision(this, 0, moveY);
-        if (!collisionUp && !collisionDown) world_Y += moveY;
+        gamePanel.collisionChecker.checkCollision(this, 0, moveY * speed);
+        if(collisionUp || collisionDown) moveY = 0;
 
-        gamePanel.collisionChecker.checkCollision(this, moveX, 0);
-        if (!collisionLeft && !collisionRight) world_X += moveX;
+        gamePanel.collisionChecker.checkCollision(this, moveX * speed, 0);
+        if(collisionLeft || collisionRight) moveX = 0;
+
+
+        int objectIndex = gamePanel.collisionChecker.checkObject(this, true);
+
+
+
+        float tempX = moveX * speed;
+        float tempY = moveY * speed;
+
+        if (moveX != 0 && moveY != 0) {
+            float length = (float) Math.sqrt(moveX * moveX + moveY * moveY);
+            tempX = moveX * speed / length;
+            tempY = moveY * speed / length;
+        }
+        if (!collisionUp && !collisionDown) world_Y += tempY;
+
+        if (!collisionLeft && !collisionRight) world_X += tempX;
 
     }
 

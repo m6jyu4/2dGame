@@ -10,8 +10,12 @@ public class GameObject {
 
     public BufferedImage image;
     public String name;
-    public boolean collision = false;
+    public boolean collision = true;
     public int worldX, worldY;
+    public Rectangle AABB = new Rectangle(0,0,48,48);
+    public int AABB_X = 0;
+    public int AABB_Y = 0;
+
 
     public void draw(Graphics2D g2, GamePanel gamePanel) {
         int screen_X = (int) (worldX - gamePanel.player.world_X + gamePanel.player.screen_X);
