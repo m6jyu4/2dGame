@@ -5,6 +5,6 @@ import java.nio.Buffer;
 
 public class Tile {
 
-    public BufferedImage texture;
-    public boolean collision = false;
+        public BufferedImage texture;
+        public boolean collision = false;
 }
