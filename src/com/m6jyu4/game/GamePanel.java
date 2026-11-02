@@ -1,5 +1,7 @@
 package com.m6jyu4.game;
 
+import com.m6jyu4.game.entity.Entity;
+import com.m6jyu4.game.entity.OldMan;
 import com.m6jyu4.game.entity.Player;
 import com.m6jyu4.game.object.GameObject;
 import com.m6jyu4.game.tile.TileManager;
@@ -13,15 +15,14 @@ public class GamePanel extends JPanel implements Runnable{
 
         public CollisionChecker collisionChecker;
         public Player           player;
+        public Entity           npc[];
         public GameObject[]     object;
         public AssetPlacer assetPlacer;
         public TileManager      tileManager;
         public Sound sound;
         public UI ui;
 
-        public int gameState;
-        public static final int playState  = 1;
-        public static final int pauseState = 2;
+        public GameState gameState;
 
         public GamePanel() {
                 initialise();
@@ -32,6 +33,7 @@ public class GamePanel extends JPanel implements Runnable{
                 KeyHandler keyHandler = new KeyHandler(this);
                 this.collisionChecker = new CollisionChecker(this);
                 this.player           = new Player(this, keyHandler);
+                this.npc              = new Entity[10];
                 this.object           = new GameObject[10];
                 this.assetPlacer      = new AssetPlacer(this);
                 this.tileManager      = new TileManager(this);
@@ -48,7 +50,8 @@ public class GamePanel extends JPanel implements Runnable{
 
         public void initialiseGame() {
                 assetPlacer.setObject();
-                gameState = playState;
+                assetPlacer.setNPC();
+                gameState = GameState.TITLE;
 //                playMusic(0);
         }
 
@@ -89,22 +92,37 @@ public class GamePanel extends JPanel implements Runnable{
 
                 Graphics2D g2 = (Graphics2D)g;
 
+                if (gameState == GameState.TITLE) ui.draw(g2);
+                else renderGame(g2);
+
+                g2.dispose();
+        }
+
+        private void renderGame(Graphics2D g2) {
                 tileManager.draw(g2);
                 for (GameObject gameObject : object) {
                         if (gameObject == null) continue;
                         gameObject.draw(g2, this);
                 }
+                for (Entity entity : npc) {
+                        if (entity == null) continue;
+                        entity.draw(g2);
+                }
                 player.draw(g2);
                 ui.draw(g2);
-
-                g2.dispose();
         }
 
         private void update(double delta) {
-                if(gameState == playState) {
+                if(gameState == GameState.PLAY) {
+
                         player.update(delta);
+                        for (Entity entity : npc) {
+                                if (entity == null) continue;
+                                entity.update();
+                        }
+
                 }
-                if(gameState == pauseState) {
+                if(gameState == GameState.PAUSE) {
 
                 }
         }

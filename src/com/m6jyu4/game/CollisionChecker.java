@@ -20,6 +20,10 @@ public class CollisionChecker {
                 this.gamePanel = gamePanel;
         }
 
+        ///     ====================
+        ///     == TILE COLLISION ==
+        ///     ====================
+
         public void checkTileCollision(Entity entity, float moveX, float moveY) {
 
                 calculateEntityBound(entity);
@@ -86,6 +90,115 @@ public class CollisionChecker {
                 return (gamePanel.tileManager.tile[LeftTileType].collision || gamePanel.tileManager.tile[RightTileType].collision);
         }
 
+        ///     =============================
+        ///     == PLAYER -> NPC COLLISION ==
+        ///     =============================
+
+        public int checkNpcCollision(Entity entity, float moveX, float moveY) {
+                float newX = entity.world_X + entity.AABB.x + moveX;
+                float newY = entity.world_Y + entity.AABB.y + moveY;
+
+                float activationRangeSq = 16384f;
+
+                for (int i = 0; i < gamePanel.npc.length; i++) {
+                        if (gamePanel.npc[i] == null) continue;
+                        if (entity == gamePanel.npc[i]) continue;
+
+                        float dx = gamePanel.npc[i].world_X - entity.world_X;
+                        float dy = gamePanel.npc[i].world_Y - entity.world_Y;
+                        float distanceSq = (dx * dx) + (dy * dy);
+
+                        if (distanceSq > activationRangeSq) continue;
+
+                        float npcLeft   = gamePanel.npc[i].world_X + gamePanel.npc[i].AABB.x;
+                        float npcRight  = npcLeft + gamePanel.npc[i].AABB.width;
+                        float npcTop    = gamePanel.npc[i].world_Y + gamePanel.npc[i].AABB.y;
+                        float npcBottom = npcTop + gamePanel.npc[i].AABB.height;
+
+                        boolean moveIntoNPCX = newX < npcRight && newX + entity.AABB.width > npcLeft && newY < npcBottom && newY + entity.AABB.height > npcTop;
+                        boolean moveIntoNPCY = newX < npcRight && newX + entity.AABB.width > npcLeft && newY < npcBottom && newY + entity.AABB.height > npcTop;
+
+                        if (moveIntoNPCY && moveY != 0) { // MOVEMENT ALONG AXIS: Y ( UP / DOWN )
+                                if (moveY < 0) {
+                                        entity.collisionUp    = true;
+                                        System.out.println("UP");
+                                }
+                                if (moveY > 0) {
+                                        entity.collisionDown  = true;
+                                        System.out.println("DOWN");
+                                }
+                                return i;
+                        }
+                        if (moveIntoNPCX && moveX != 0) { // MOVEMENT ALONG AXIS: X ( LEFT / RIGHT )
+                                if (moveX < 0) {
+                                        entity.collisionLeft  = true;
+                                        System.out.println("LEFT");
+                                }
+                                if (moveX > 0) {
+                                        entity.collisionRight = true;
+                                        System.out.println("RIGHT");
+                                }
+                                return i;
+                        }
+
+                }
+                return -1;
+        }
+
+        ///     =============================
+        ///     == NPC -> PLAYER COLLISION ==
+        ///     =============================
+
+        public void checkPlayerCollision(Entity entity, float moveX, float moveY) {
+                float newX = entity.world_X + entity.AABB.x + moveX;
+                float newY = entity.world_Y + entity.AABB.y + moveY;
+
+                float activationRangeSq = 16384f;
+
+                if (gamePanel.player == null) return;
+
+                float dx = gamePanel.player.world_X - entity.world_X;
+                float dy = gamePanel.player.world_Y - entity.world_Y;
+                float distanceSq = (dx * dx) + (dy * dy);
+
+                if (distanceSq > activationRangeSq) return;
+
+                float playerLeft   = gamePanel.player.world_X + gamePanel.player.AABB.x;
+                float playerRight  = playerLeft + gamePanel.player.AABB.width;
+                float playerTop    = gamePanel.player.world_Y + gamePanel.player.AABB.y;
+                float playerBottom = playerTop + gamePanel.player.AABB.height;
+
+                boolean moveIntoPlayerX = newX < playerRight && newX + entity.AABB.width > playerLeft && newY < playerBottom && newY + entity.AABB.height > playerTop;
+                boolean moveIntoPlayerY = newX < playerRight && newX + entity.AABB.width > playerLeft && newY < playerBottom && newY + entity.AABB.height > playerTop;
+
+                if (moveIntoPlayerY && moveY != 0) { // MOVEMENT ALONG AXIS: Y ( UP / DOWN )
+                        if (moveY < 0) {
+                                entity.collisionUp    = true;
+                                System.out.println("UP");
+                        }
+                        if (moveY > 0) {
+                                entity.collisionDown  = true;
+                                System.out.println("DOWN");
+                        }
+                }
+                if (moveIntoPlayerX && moveX != 0) { // MOVEMENT ALONG AXIS: X ( LEFT / RIGHT )
+                        if (moveX < 0) {
+                                entity.collisionLeft  = true;
+                                System.out.println("LEFT");
+                        }
+                        if (moveX > 0) {
+                                entity.collisionRight = true;
+                                System.out.println("RIGHT");
+                        }
+                }
+
+
+        }
+
+        ///     ======================
+        ///     == OBJECT COLLISION ==
+        ///     ======================
+
         public int checkObjectCollision(Entity entity, float moveX, float moveY) {
                 float newX = entity.world_X + entity.AABB.x + moveX;
                 float newY = entity.world_Y + entity.AABB.y + moveY;
@@ -134,5 +247,7 @@ public class CollisionChecker {
                 }
                 return -1;
         }
+
+
 
 }

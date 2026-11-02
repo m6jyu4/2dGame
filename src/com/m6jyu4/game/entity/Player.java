@@ -4,14 +4,11 @@ import com.m6jyu4.game.*;
 import com.m6jyu4.game.GamePanel;
 import com.m6jyu4.game.GameSettings;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 public class Player extends Entity {
 
-        GamePanel gamePanel;
         KeyHandler keyHandler;
 
         private static final float DIAGONAL_MULTIPLIER = 0.70710678f;
@@ -19,7 +16,8 @@ public class Player extends Entity {
         public final int screen_X, screen_Y;
 
         public Player(GamePanel gamePanel, KeyHandler keyHandler) {
-                this.gamePanel  = gamePanel;
+                super(gamePanel);
+
                 this.keyHandler = keyHandler;
 
                 screen_X = GameSettings.SCREEN_WIDTH / 2 - GameSettings.TILE_SIZE / 2;
@@ -43,41 +41,29 @@ public class Player extends Entity {
 
         private void registerPlayerTexture() {
                 // Idle animations
-                up_idle1    = loadTexture("up_idle1");
-                up_idle2    = loadTexture("up_idle2");
-                down_idle1  = loadTexture("down_idle1");
-                down_idle2  = loadTexture("down_idle2");
-                left_idle1  = loadTexture("left_idle1");
-                left_idle2  = loadTexture("left_idle2");
-                right_idle1 = loadTexture("right_idle1");
-                right_idle2 = loadTexture("right_idle2");
+                up_idle1    = loadTexture("/player/up_idle1");
+                up_idle2    = loadTexture("/player/up_idle2");
+                down_idle1  = loadTexture("/player/down_idle1");
+                down_idle2  = loadTexture("/player/down_idle2");
+                left_idle1  = loadTexture("/player/left_idle1");
+                left_idle2  = loadTexture("/player/left_idle2");
+                right_idle1 = loadTexture("/player/right_idle1");
+                right_idle2 = loadTexture("/player/right_idle2");
 
                 // Walking animations
-                up1    = loadTexture("up1");
-                up2    = loadTexture("up2");
-                down1  = loadTexture("down1");
-                down2  = loadTexture("down2");
-                left1  = loadTexture("left1");
-                left2  = loadTexture("left2");
-                right1 = loadTexture("right1");
-                right2 = loadTexture("right2");
-        }
-
-        private BufferedImage loadTexture(String imageName) {
-                Util util = new Util();
-                BufferedImage image = null;
-                try {
-                        image = ImageIO.read(getClass().getResourceAsStream("/player/" + imageName + ".png"));
-                        image = util.scaleImage(image, GameSettings.TILE_SIZE, GameSettings.TILE_SIZE);
-                } catch (IOException e) {
-                        e.printStackTrace();
-                }
-                return image;
+                up1    = loadTexture("/player/up1");
+                up2    = loadTexture("/player/up2");
+                down1  = loadTexture("/player/down1");
+                down2  = loadTexture("/player/down2");
+                left1  = loadTexture("/player/left1");
+                left2  = loadTexture("/player/left2");
+                right1 = loadTexture("/player/right1");
+                right2 = loadTexture("/player/right2");
         }
 
         private BufferedImage selectTexture() {
 
-                if (gamePanel.gameState == GamePanel.playState) {
+                if (gamePanel.gameState == GameState.PLAY) {
                         setSpriteDirection();
                         setSpriteCounter();
 
@@ -138,18 +124,24 @@ public class Player extends Entity {
 
 
                 gamePanel.collisionChecker.checkTileCollision(this, 0, moveY * speed);
-                int objectIndexX = gamePanel.collisionChecker.checkObjectCollision(this, moveX * speed, 0);
+                int objectIndexY = gamePanel.collisionChecker.checkObjectCollision(this, 0, moveY * speed);
+                int npcIndexY    = gamePanel.collisionChecker.checkNpcCollision(this, 0, moveY * speed);
                 if(collisionUp || collisionDown) moveY = 0;
 
                 gamePanel.collisionChecker.checkTileCollision(this, moveX * speed, 0);
-                int objectIndexY = gamePanel.collisionChecker.checkObjectCollision(this, 0, moveY * speed);
+                int objectIndexX = gamePanel.collisionChecker.checkObjectCollision(this, moveX * speed, 0);
+                int npcIndexX    = gamePanel.collisionChecker.checkNpcCollision(this, moveX * speed, 0);
                 if(collisionLeft || collisionRight) moveX = 0;
 
                 int objectIndex = -1;
-                if (objectIndexX != objectIndex) objectIndex = objectIndexX;
-                if (objectIndexY != objectIndex) objectIndex = objectIndexY;
+                if (objectIndexX != -1) objectIndex = objectIndexX;
+                if (objectIndexY != -1) objectIndex = objectIndexY;
                 pickUpObject(objectIndex);
 
+                int npcIndex = -1;
+                if (npcIndexX != -1) npcIndex = npcIndexX;
+                if (npcIndexY != -1) npcIndex = npcIndexY;
+                interactWithNpc(npcIndex);
 
                 float tempX = (float) (moveX * speed );
                 float tempY = (float) (moveY * speed );
@@ -165,9 +157,15 @@ public class Player extends Entity {
         }
 
         private void pickUpObject(int i) {
-                if(i == -1) return;
+                if (i == -1) return;
+        }
 
-        };
+        private void interactWithNpc(int i) {
+                if (i == -1) return;
+
+                gamePanel.gameState = GameState.DIALOGUE;
+                gamePanel.npc[i].speak();
+        }
 
         public void update(double delta) {
                 handlePlayerMovement(delta);
