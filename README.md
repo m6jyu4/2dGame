@@ -69,7 +69,7 @@ This project is for personal portfolio use.
 The initial project structure was based on RyiSnow's Java 2D game tutorial
 (4-direction movement, basic tile rendering). My modifications include:
 
-- **8-direction movement** with diagonal speed normalisation
-- **Axis-separated collision detection** for wall-sliding
+- 8-direction movement with diagonal speed normalisation
+- Axis-separated collision detection for wall-sliding
 - Distance-squared proximity culling for NPC/object activation
 - Refactored entity hierarchy and state-driven dialogue/UI
